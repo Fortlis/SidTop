@@ -1,0 +1,13 @@
+* text=auto eol=lf
+
+# Windows-specific scripts should keep CRLF
+*.bat text eol=crlf
+
+# Binary files - don't touch line endings at all
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jar binary
+*.keystore binary

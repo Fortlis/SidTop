@@ -1,0 +1,28 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <receiver
+            android:name="expo.modules.alarmconfirm.alarm.AlarmReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="expo.modules.alarmconfirm.alarm.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="expo.modules.alarmconfirm.service.CancelReasonReceiver"
+            android:exported="false" />
+
+        <service
+            android:name="expo.modules.alarmconfirm.service.AlarmSoundService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+    </application>
+
+</manifest>
