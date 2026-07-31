@@ -8,7 +8,7 @@
    <img src="docs/images/settings-screen.jpg" width="250" alt="Settings screen" />
 </p>
 
-[![GitHub release](https://img.shields.io/github/v/release/fortlis/SidTop)](https://github.com/fortlis/SidTop/releases)
+[![GitHub release](https://img.shields.io/github/v/release/Fortlis/SidTop?include_prereleases)](https://github.com/fortlis/SidTop/releases)
 
 ## Overview
 
