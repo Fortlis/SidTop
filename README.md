@@ -8,16 +8,21 @@
    <img src="docs/images/settings-screen.jpg" width="250" alt="Settings screen" />
 </p>
 
-[![GitHub release](https://img.shields.io/github/v/release/fortlis/SidTop)](https://github.com/fortlis/SidTop/releases)
+<p align="center">
+	<a href="https://github.com/fortlis/SidTop/releases">
+		<img src="https://img.shields.io/github/v/release/Fortlis/SidTop?include_prereleases" alt="GitHub release" />
+	</a>
+</p>
 
 ## Overview
 
-SidTop lets you schedule a session for a specific time. When the scheduled time arrives, the app plays the device's default system alarm sound. The alarm can be stopped in **only** one of two ways:
+I built SidTop because I got tired of productivity apps that treat you like an addict. They block your screen, shame you for screen time, and force you to keep streaks. I just needed a tool to help me stop scrolling and start working.
 
-1. **Tap Cancel and enter a reason** — the session moves to `cancelled` status, and the reason is saved to history.
-2. **Flip the phone face-down and hold it for a set duration** — the session automatically moves to `completed` status.
+The idea is simple: you promise yourself you'll sit down and work at a specific time. When that time arrives, an alarm starts ringing. The primary way to stop it is to flip your phone face-down and leave it there for several minutes.
 
-The hold duration for the flip gesture is configurable in the settings screen.
+This creates a physical and psychological buffer zone. By forcing you to put the device away and wait, your brain gets the necessary time to detach from the screen and transition into work mode.
+
+If something real comes up and you need to stop the alarm without flipping, you can. Tap Cancel and enter a reason. But that's the exception, not how it's meant to be used.
 
 ## User Flow
 
@@ -33,21 +38,6 @@ The hold duration for the flip gesture is configurable in the settings screen.
               status: cancelled                status: completed
 ```
 
-
-## Android Native Layer
-
-- **Scheduling:** `AlarmManager` is used to schedule exact alarm times
-    
-- **Reboot Handling:** A `BootReceiver` ensures that all scheduled sessions are correctly restored if the device restarts
-    
-- **Alarm Execution:** When the time arrives, a `BroadcastReceiver` triggers a `ForegroundService`
-    
-- **Background Work:** The `ForegroundService` is responsible for playing the default system alarm sound
-    
-- **Motion Detection:** The app listens to sensor data (via `SensorManager`) inside the service to detect when the device is flipped **face-down**.
-	
-- **Session Handling:** Sessions are temporarily saved in `Datastore`, allowing the native code logic to function even when the JS thread is inactive. Once the JS thread wakes up, the sessions are synchronized, moved to the `SQLite` database, and cleared from `Datastore`.
-
 ## Session Statuses
 
 | Status      | How it's reached                                   |
@@ -57,13 +47,39 @@ The hold duration for the flip gesture is configurable in the settings screen.
 | `cancelled` | Cancel tapped + cancellation reason entered        |
 | `completed` | Phone held face-down for the configured duration   |
 
+# Tech Stack & Architecture 
+
 ## Tech Stack
 
-- [Expo](https://expo.dev)
-- [Expo Modules API](https://docs.expo.dev/modules/overview/) — custom native module
-- React Native
-- Kotlin (native side: flip detection via accelerometer, system alarm sound playback, foreground service, datastore)
-- Yarn — package manager
+- **Framework:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev)
+- **Native Module:** [Expo Modules API](https://docs.expo.dev/modules/overview/)
+- **Local Storage:** SQLite (JS thread) + DataStore (Native thread)
+- **Package Manager:** Yarn
+
+## Android Native Layer
+
+- **Scheduling:** `AlarmManager` schedules precise alarm times
+    
+- **Reboot Handling:** `BootReceiver` restores scheduled sessions if the device restarts
+    
+- **Alarm Execution:** A `BroadcastReceiver` triggers a `ForegroundService` when the scheduled time arrives
+    
+- **Background Playback:** `ForegroundService` keeps playing the default system alarm sound even when the app is backgrounded or killed
+    
+- **Motion Detection:** Reads sensor data via `SensorManager` inside the native service to detect when the device is flipped face-down and holds that state
+	
+- **Data Sync:** Sessions are temporarily held in `Datastore` so native code functions without relying on the JS thread. Once the JS thread wakes up, data synchronizes to `SQLite` and clears from `Datastore`
+
+## Required Android permissions
+
+| Permission                                                  | Why it's needed                                         |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| `USE_EXACT_ALARM`                                           | precise triggering of the session at the scheduled time |
+| `RECEIVE_BOOT_COMPLETED`                                    | restoring scheduled sessions after a device reboot      |
+| `FOREGROUND_SERVICE`<br>`FOREGROUND_SERVICE_MEDIA_PLAYBACK` | playing the alarm even when the app is backgrounded     |
+| `POST_NOTIFICATIONS`                                        | allows the app to send notifications                    |
+
+# Getting Started
 
 ## Installation
 
@@ -101,11 +117,3 @@ Or via EAS Build:
 eas build --platform android --profile production
 ```
 
-## Required Android permissions
-
-| Permission                                                  | Why it's needed                                         |
-| ----------------------------------------------------------- | ------------------------------------------------------- |
-| `USE_EXACT_ALARM`                                           | precise triggering of the session at the scheduled time |
-| `RECEIVE_BOOT_COMPLETED`                                    | restoring scheduled sessions after a device reboot      |
-| `FOREGROUND_SERVICE`<br>`FOREGROUND_SERVICE_MEDIA_PLAYBACK` | playing the alarm even when the app is backgrounded     |
-| `POST_NOTIFICATIONS`                                        | allows the app to send notifications                    |
